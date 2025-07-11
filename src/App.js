@@ -14,6 +14,7 @@ function App() {
   const [weatherData, setWeatherData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [coords, setCoords] = useState(null);
+  const [error, setError] = useState(null);
   
 
   useEffect(() => {
@@ -44,27 +45,42 @@ function App() {
   console.log("wether data is",weatherData);
   
 
-  const fetchWeatherByCity = async (city) => {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
-      );
-      const data = await res.json();
+const fetchWeatherByCity = async (city) => {
+  setLoading(true);
+  try {
+    const res = await fetch(
+      `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`
+    );
+    const data = await res.json();
+    
+    if (data.cod === "404") {
+      setWeatherData(null); 
+      setError("City not found");
+    } else {
       setWeatherData(data);
-    } catch (err) {
-      console.error("Error fetching city weather:", err);
-    } finally {
-      setLoading(false);
+      setError(null);
     }
-  };
+
+  } catch (err) {
+    console.error("Error fetching city weather:", err);
+    setError("Something went wrong");
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   const handleGrantAccess = () => {
+    console.log("Grant Access clicked");
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((pos) => {
+        console.log("Geolocation success ✅", pos);
         const { latitude, longitude } = pos.coords;
         const userCoords = { lat: latitude, lon: longitude };
+         console.log("Coordinates:", userCoords);
         sessionStorage.setItem("user-coordinates", JSON.stringify(userCoords));
+        
         setCoords(userCoords);
         fetchWeatherByCoords(latitude, longitude);
       });
@@ -92,6 +108,17 @@ function App() {
           <WeatherInfo weather={weatherData} />
         )}
       </div>
+      {error && (
+  <div className="flex flex-col items-center mt-10">
+    <img
+      src={`${process.env.PUBLIC_URL}/images/not-found.png`}
+      alt="not found"
+      className="w-[200px] h-auto"
+    />
+    <p className="text-white mt-4 text-lg">{error}</p>
+  </div>
+)}
+
     </div>
   );
 }

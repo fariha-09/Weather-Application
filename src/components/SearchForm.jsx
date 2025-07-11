@@ -18,7 +18,7 @@ export default function SearchForm({ onSearch }) {
         onChange={(e) => setCity(e.target.value)}
       />
       <button className="btn" type="submit">
-        <img src="/images/search.png" width="20" height="20" alt="search" />
+        <img src={`${process.env.PUBLIC_URL}/images/search.png`} width="20" height="20" alt="search" />
       </button>
     </form>
   );
